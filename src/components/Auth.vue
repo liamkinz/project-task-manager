@@ -12,6 +12,7 @@
   import { ref } from 'vue'
   import { supabase } from '../lib/supabase'
 
+  //ohaha
   const email = ref('')
   const password = ref('')
 
