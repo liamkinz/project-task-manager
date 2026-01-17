@@ -44,13 +44,14 @@
         </v-col>
       </v-row>
       <v-btn
-        block
-        class="text-h6 rounded-pill elevation-6"
+        class="px-6 font-weight-bold"
         color="primary"
-        x-large
+        elevation="2"
+        rounded="pill"
+        size="large"
         @click="addTask"
       >
-        <v-icon left size="28">mdi-plus</v-icon> Add Task to List
+        <v-icon left size="28">mdi-plus</v-icon>Add Task to List
       </v-btn>
     </v-card>
 
@@ -81,67 +82,39 @@
                 <v-icon left>mdi-open-in-new</v-icon> Open Details
               </v-btn>
             </v-col>
+
+            <v-col
+              class="d-flex justify-end"
+              cols="6"
+              lg="4"
+              md="6"
+              xl="3"
+            >
+              <TaskTimer
+                :initial-minutes="5" 
+                @finished="onTimerFinished"
+              />
+            </v-col>
+            
           </v-row>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-dialog v-model="dialogOpen" max-width="800" overlay-opacity="0.8">
-      <v-card class="pa-6" rounded="xl">
-        <v-card-title class="text-h4 font-weight-bold pb-4">
-          Task Settings
-        </v-card-title>
-        
-        <v-divider class="mb-6" />
-
-        <v-card-text>
-          <div v-if="selectedTask">
-            <v-text-field 
-              v-model="editedTitle" 
-              class="text-h5" 
-              label="Task Title" 
-              outlined
-            />
-            <v-textarea 
-              v-model="editedDescription" 
-              class="text-body-1" 
-              label="Description" 
-              outlined 
-              rows="6"
-            />
-          </div>
-        </v-card-text>
-
-        <v-card-actions class="pb-6 px-6">
-          <v-btn
-            class="font-weight-bold"
-            color="error"
-            text
-            x-large
-            @click="deleteFromDialog"
-          >
-            <v-icon left>mdi-delete</v-icon> Delete
-          </v-btn>
-          <v-spacer />
-          <v-btn
-            class="mr-2"
-            color="grey lighten-2"
-            text
-            x-large
-            @click="closeDialog"
-          >Cancel</v-btn>
-          <v-btn class="px-10 elevation-4 rounded-pill" color="success" x-large @click="updateFromDialog">
-            Save Changes
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <TaskDialog
+      v-model="dialogOpen"
+      :selectedTask="selectedTask"
+      @save="updateFromDialog"
+      @delete="deleteFromDialog"
+      @close="closeDialog"
+    />
 
   </v-container>
 </template>
 
 <script setup>
   import { onMounted, ref } from 'vue'
+  import TaskDialog from '../dialogs/TaskDialog.vue'
   import { supabase } from '../lib/supabase'
   /* STATE */
   const tasks = ref([])
@@ -150,8 +123,6 @@
   const newDescription = ref('')
 
   const editingTaskId = ref(null)
-  const editedTitle = ref('')
-  const editedDescription = ref('')
 
   /* DIALOG STATE */
   const dialogOpen = ref(false)
@@ -159,8 +130,6 @@
 
   function openDialog (task) {
     selectedTask.value = task
-    editedTitle.value = task.title
-    editedDescription.value = task.description
     dialogOpen.value = true
   }
 
@@ -169,15 +138,19 @@
     selectedTask.value = null
   }
 
-  async function updateFromDialog () {
-    if (!selectedTask.value) return
-    await updateTask(selectedTask.value.id)
+  function onTimerFinished () {
+    console.log('Timer completed!')
+  }
+
+  async function updateFromDialog (payload) {
+    if (!payload) return
+    await updateTask(payload.id, payload.title, payload.description)
     closeDialog()
   }
 
-  async function deleteFromDialog () {
-    if (!selectedTask.value) return
-    await deleteTask(selectedTask.value.id)
+  async function deleteFromDialog (id) {
+    if (!id) return
+    await deleteTask(id)
     closeDialog()
   }
 
@@ -222,20 +195,18 @@
   }
 
   /* UPDATE */
-  async function updateTask (id) {
-    if (!editedTitle.value) return
+  async function updateTask (id, title, description) {
+    if (!title) return
 
     await supabase
       .from('tasks')
       .update({
-        title: editedTitle.value,
-        description: editedDescription.value,
+        title,
+        description,
       })
       .eq('id', id)
 
     editingTaskId.value = null
-    editedTitle.value = ''
-    editedDescription.value = ''
     fetchTasks()
   }
 

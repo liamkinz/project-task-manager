@@ -1,5 +1,5 @@
 <template>
-  <v-card class="pa-5" max-width="400">
+  <v-card class="pa-12" max-width="400">
     <v-text-field v-model="email" label="Email" />
     <v-text-field v-model="password" label="Password" type="password" />
 
