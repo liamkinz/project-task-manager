@@ -1,5 +1,6 @@
 <!-- eslint-disable @stylistic/no-trailing-spaces -->
 <template>
+<AppLayout>
   <v-container class="pa-0">
     <v-row align="center" class="mb-8">
       <v-col>
@@ -7,15 +8,6 @@
         <span class="grey--text text--darken-1">{{ tasks.length }} Tasks Remaining</span>
       </v-col>
       <v-spacer />
-      <v-btn
-        class="font-weight-bold"
-        color="red darken-2"
-        text
-        x-large
-        @click="logout"
-      >
-        <v-icon left>mdi-logout</v-icon> Logout
-      </v-btn>
     </v-row>
 
     <v-card class="pa-8 mb-12 grey lighten-5" elevation="4" rounded="xl">
@@ -95,7 +87,6 @@
                 @finished="onTimerFinished"
               />
             </v-col>
-            
           </v-row>
         </v-card>
       </v-col>
@@ -110,12 +101,17 @@
     />
 
   </v-container>
+  </AppLayout>
 </template>
 
 <script setup>
+  import AppLayout from './AppLayout.vue'
   import { onMounted, ref } from 'vue'
   import TaskDialog from '../dialogs/TaskDialog.vue'
   import { supabase } from '../lib/supabase'
+
+  defineProps({ user: Object })
+  
   /* STATE */
   const tasks = ref([])
 

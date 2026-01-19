@@ -126,41 +126,52 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
-  import { supabase } from '../lib/supabase'
+import { ref } from 'vue'
+import { supabase } from '../lib/supabase'
+import { id } from 'vuetify/locale'
 
-  const email = ref('')
-  const password = ref('')
-  const showPassword = ref(false)
-  const isRegister = ref(false)
-  const loading = ref(false)
-  const error = ref('')
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const isRegister = ref(false)
+const loading = ref(false)
+const error = ref('')
 
-  async function handleSubmit () {
-    error.value = ''
-    loading.value = true
+async function handleSubmit () {
+  error.value = ''
+  loading.value = true
 
-    try {
-      if (isRegister.value) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: email.value,
-          password: password.value,
+  try {
+    if (isRegister.value) {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value,
+      })
+      if (signUpError) throw signUpError
+
+      // Create profile row
+      if (data?.user) {
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          name: '',
+          bio: '',
+          job: '',
+          created_at: new Date(),
         })
-        if (signUpError) throw signUpError
-      } else {
-        const { error: signInError }
-          = await supabase.auth.signInWithPassword({
-            email: email.value,
-            password: password.value,
-          })
-        if (signInError) throw signInError
       }
-    } catch (error_) {
-      error.value = error_.message || 'Authentication failed'
-    } finally {
-      loading.value = false
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+      })
+      if (signInError) throw signInError
     }
+  } catch (err) {
+    error.value = err?.message || 'Authentication failed'
+  } finally {
+    loading.value = false
   }
+}
 </script>
 
 <style scoped>

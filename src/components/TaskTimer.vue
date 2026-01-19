@@ -17,6 +17,7 @@
         <span class="text-white text-body-2 font-weight-bold">
           {{ formattedTime }}
         </span>
+        
       </v-progress-linear>
     </v-card-text>
 
