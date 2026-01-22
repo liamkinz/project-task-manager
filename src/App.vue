@@ -3,6 +3,7 @@
     <v-main class="fill-height">
       <LoginView v-if="!user" />
       <router-view v-else :user="user" />
+      <AppToast />
     </v-main>
   </v-app>
 </template>
@@ -10,6 +11,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import LoginView from './components/LoginView.vue'
+import AppToast from './components/AppToast.vue'
 import { supabase } from './lib/supabase'
 
 const user = ref(null)

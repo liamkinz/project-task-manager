@@ -43,12 +43,12 @@
         size="large"
         @click="addTask"
       >
-        <v-icon left size="28">mdi-plus</v-icon>Add Task to List
+        <v-icon left size="28">mdi-plus</v-icon>Add Task
       </v-btn>
     </v-card>
 
     <v-row>
-      <v-col v-for="task in tasks" :key="task.id" cols="12">
+      <v-col v-for="task in tasks" :key="task.id" cols="8">
         <v-card 
           class="pa-6 mb-4 transition-swing" 
           elevation="2" 
@@ -109,6 +109,8 @@
   import { onMounted, ref } from 'vue'
   import TaskDialog from '../dialogs/TaskDialog.vue'
   import { supabase } from '../lib/supabase'
+  import { useToastStore } from '@/stores/toast'
+
 
   defineProps({ user: Object })
   
@@ -119,6 +121,8 @@
   const newDescription = ref('')
 
   const editingTaskId = ref(null)
+  const toast = useToastStore()
+  const loading = ref(false)
 
   /* DIALOG STATE */
   const dialogOpen = ref(false)
@@ -165,7 +169,10 @@
 
   /* CREATE */
   async function addTask () {
+    if (loading.value) return // 🚫 double submit protection
     if (!newTitle.value) return
+
+    toast.loading('Saving task...')
 
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -175,6 +182,8 @@
       description: newDescription.value,
     })
 
+    toast.clearLoading()
+    toast.success('Task added successfully!')
     newTitle.value = ''
     newDescription.value = ''
     fetchTasks()

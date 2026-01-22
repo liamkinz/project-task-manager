@@ -52,6 +52,10 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useToastStore } from '@/stores/toast'
+
+const toast = useToastStore()
+const loading = ref(false)
 
 const props = defineProps({
   modelValue: Boolean,
@@ -91,19 +95,30 @@ function closeDialog () {
 }
 
 function updateFromDialog () {
+  if (loading.value) return // 🚫 double submit protection
+  
   if (!props.selectedTask) return
+  toast.loading('Updating task...')
   emit('save', {
     id: props.selectedTask.id,
     title: editedTitle.value,
     description: editedDescription.value,
   })
+  toast.clearLoading()
+  toast.success('Task updated successfully!')
 }
 
 function deleteFromDialog () {
+  if (loading.value) return // 🚫 double submit protection
+
   if (!props.selectedTask) return
+  toast.loading('Deleting task...')
   emit('delete', props.selectedTask.id)
   emit('update:modelValue', false)
+  toast.clearLoading()
+  toast.success('Task deleted successfully!')
 }
+  
 </script>
 
 <style scoped>

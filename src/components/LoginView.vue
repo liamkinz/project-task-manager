@@ -127,8 +127,11 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
-import { id } from 'vuetify/locale'
+
+const router = useRouter()
+
 
 const email = ref('')
 const password = ref('')
@@ -160,11 +163,16 @@ async function handleSubmit () {
         })
       }
     } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.value,
         password: password.value,
       })
       if (signInError) throw signInError
+      //display in console.log
+      console.log('Login success:', data.session)
+
+      // 🔑 THIS WAS MISSING
+      router.push('/tasks')
     }
   } catch (err) {
     error.value = err?.message || 'Authentication failed'
